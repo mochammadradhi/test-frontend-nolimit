@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useState } from "react";
 
 interface LineChartProps {
   chartConfigLine: ChartConfig;
@@ -32,6 +33,8 @@ interface LineChartProps {
   dataKeyAxis: string;
   title: string;
   uptodateYear: string;
+  startYear?: number;
+  endYear?: number;
 }
 const LineChartComponent = ({
   chartConfigLine,
@@ -41,7 +44,27 @@ const LineChartComponent = ({
   dataKeyDisplay,
   title,
   uptodateYear,
+  startYear,
+  endYear,
 }: LineChartProps) => {
+  const [selectedYear, setSelectedYear] = useState(`-- Select Year --`);
+
+  // Filter data based on selected year
+  const filteredData =
+    selectedYear === "-- Select Year --"
+      ? lineData
+      : lineData.filter((item) => {
+          const itemYear = new Date(item[dataKeyAxis]).getFullYear().toString();
+          return itemYear === selectedYear;
+        });
+
+  // Generate years array for dropdown with "All Years" option
+  const years = [
+    "-- Select Year --",
+    ...Array.from({ length: endYear - startYear + 1 }, (_, i) =>
+      (startYear + i).toString()
+    ).reverse(),
+  ];
   return (
     <Card className="@container/card">
       <CardHeader className="relative">
@@ -53,49 +76,29 @@ const LineChartComponent = ({
           <span className="@[540px]/card:hidden">Updated {uptodateYear}</span>
         </CardDescription>
         <div className="absolute right-4 top-4">
-          {/* <ToggleGroup
-            type="single"
-            value={timeRange}
-            onValueChange={setTimeRange}
-            variant="outline"
-            className="@[767px]/card:flex hidden"
-          >
-            <ToggleGroupItem value="90d" className="h-8 px-2.5">
-              Last 3 months
-            </ToggleGroupItem>
-            <ToggleGroupItem value="30d" className="h-8 px-2.5">
-              Last 30 days
-            </ToggleGroupItem>
-            <ToggleGroupItem value="7d" className="h-8 px-2.5">
-              Last 7 days
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className="@[767px]/card:hidden flex w-40"
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder="Last 3 months" />
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-32" aria-label="Select year">
+              <SelectValue placeholder="Select year" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
-              </SelectItem>
+              {years.map((year) => (
+                <SelectItem
+                  key={year}
+                  value={year.toString()}
+                  className="rounded-lg"
+                >
+                  {year}
+                </SelectItem>
+              ))}
             </SelectContent>
-          </Select> */}
+          </Select>
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer className="h-[300px] w-full" config={chartConfigLine}>
           <LineChart
             accessibilityLayer
-            data={lineData}
+            data={filteredData || lineData}
             margin={{
               top: 20,
               left: 12,
