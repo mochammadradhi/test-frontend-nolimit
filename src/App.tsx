@@ -2,39 +2,22 @@
 
 import * as React from "react";
 import { TrendingUp } from "lucide-react";
-import {
-  Label,
-  Pie,
-  Line,
-  CartesianGrid,
-  LabelList,
-  LineChart,
-  XAxis,
-  PieChart,
-} from "recharts";
 
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 287, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 190, fill: "var(--color-other)" },
-];
+import { TrendingUpIcon } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+
+import PieChartComponent from "./components/piechart";
+import LineChartComponent from "./components/linechart";
+import { SectionCards } from "./components/cards";
 
 const chartConfig = {
   Year: {
@@ -44,7 +27,7 @@ const chartConfig = {
     label: "Other",
     color: "hsl(212 97% 87%)",
   },
-} satisfies ChartConfig;
+};
 
 const sensusData = [
   {
@@ -137,14 +120,6 @@ const sensusData = [
   },
 ];
 
-const chartDataLine = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-];
 const chartConfigLine = {
   year: {
     label: "Year",
@@ -154,17 +129,21 @@ const chartConfigLine = {
     label: "Population",
     color: "hsl(212 95% 68%)",
   },
-} satisfies ChartConfig;
+};
 
 function App() {
   const convertThousand = new Intl.NumberFormat("en", {
     notation: "compact",
   });
 
-  const totalVisitors = React.useMemo(() => {
-    return convertThousand.format(
-      sensusData.reduce((acc, curr) => acc + curr.Population, 0)
-    );
+  const latestYear = React.useMemo(() => {
+    return sensusData.reduce((latest, current) => {
+      return Number(current.Year) > Number(latest.Year) ? current : latest;
+    }).Year;
+  }, []);
+
+  const totalPopulation = React.useMemo(() => {
+    return sensusData.reduce((acc, curr) => acc + curr.Population, 0);
   }, []);
 
   const pieData = React.useMemo(() => {
@@ -186,114 +165,49 @@ function App() {
       .sort((a, b) => Number(a.year) - Number(b.year));
   }, []);
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Pie Chart - Donut with Text</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[350px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <SectionCards>
+            <Card className="@container/card">
+              <CardHeader className="relative">
+                <CardDescription>Total Population</CardDescription>
+                <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+                  {convertThousand.format(totalPopulation)}
+                </CardTitle>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium">
+                  Trending up this month <TrendingUpIcon className="size-4" />
+                </div>
+                <div className="text-muted-foreground">
+                  Visitors for the last 6 months
+                </div>
+              </CardFooter>
+            </Card>
+          </SectionCards>
+          <div className=" px-4 lg:px-6">
+            <LineChartComponent
+              title="Growth Population"
+              uptodateYear={latestYear}
+              chartConfigLine={chartConfigLine}
+              lineData={lineData}
+              dataKeyAxis="year"
+              dataKeyLine="population"
+              dataKeyDisplay="displayPopulation"
             />
-            <Pie
-              data={pieData}
-              dataKey="population"
-              nameKey="year"
-              innerRadius={60}
-              strokeWidth={5}
-            >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-xl font-bold"
-                        >
-                          {totalVisitors.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          Population
-                        </tspan>
-                      </text>
-                    );
-                  }
-                }}
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
+          </div>
 
-        <ChartContainer config={chartConfigLine}>
-          <LineChart
-            accessibilityLayer
-            data={lineData}
-            margin={{
-              top: 20,
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={true} />
-            <XAxis
-              dataKey="year"
-              tickLine={true}
-              axisLine={true}
-              tickMargin={2}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Line
-              dataKey="population"
-              type="natural"
-              stroke="var(--color-year)"
-              strokeWidth={2}
-              dot={{
-                fill: "var(--color-year)",
-              }}
-              activeDot={{
-                r: 6,
-              }}
-            >
-              <LabelList
-                dataKey="displayPopulation"
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
-              />
-            </Line>
-          </LineChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+          <PieChartComponent
+            pieData={pieData}
+            chartConfig={chartConfig}
+            totalPopulation={totalPopulation}
+            dataKey="population"
+            nameKey="year"
+          />
         </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }
 export default App;
