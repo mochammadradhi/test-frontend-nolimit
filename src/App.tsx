@@ -1,24 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { TrendingUp, ChartPie, ChartLine } from "lucide-react";
+import { ChartPie, ChartLine } from "lucide-react";
 import { GlobalGet } from "@/helpers/fetcher.ts";
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { TrendingUpIcon } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
 
 import PieChartComponent from "./components/piechart";
 import LineChartComponent from "./components/linechart";
 import SectionCards from "./components/cards";
-import { log } from "console";
+
 import LoadingComponent from "./components/loading";
 
 const chartConfig = {
@@ -68,7 +60,6 @@ function App() {
     activeChart: "",
   });
 
-  console.log(state.source);
   const fetchData = async () => {
     try {
       const response = await GlobalGet<PopulationData>({
@@ -77,8 +68,8 @@ function App() {
 
       setState((prev) => ({
         ...prev,
-        data: response.data || [],
-        source: response.source[0].annotations || [],
+        data: response.data,
+        source: response?.source[0]?.annotations,
         isLoading: false,
       }));
     } catch (err) {
