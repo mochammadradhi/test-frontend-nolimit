@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChartPie, ChartLine } from "lucide-react";
+import { ChartPie, ChartLine, TrendingUpIcon } from "lucide-react"; // Consolidated imports
 import { GlobalGet } from "@/helpers/fetcher.ts";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { TrendingUpIcon } from "lucide-react";
 
 import PieChartComponent from "./components/piechart";
 import LineChartComponent from "./components/linechart";
@@ -56,12 +54,17 @@ function App() {
   const [state, setState] = React.useState<PopulationData>({
     isLoading: true,
     data: [],
-    source: {},
+    source: {
+      source_name: "",
+      dataset_name: "",
+      dataset_link: "",
+      source_description: "",
+    },
     error: null,
     activeChart: "Line",
   });
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const response = await GlobalGet<PopulationData>({
         url: `https://datausa.io/api/data?drilldowns=Nation&measures=Population`,
@@ -72,6 +75,7 @@ function App() {
           error: response,
           isLoading: false,
         }));
+        return;
       }
       setState((prev) => ({
         ...prev,
@@ -91,17 +95,24 @@ function App() {
         isLoading: false,
       }));
     }
-  };
+  }, []);
 
   React.useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  const convertThousandFormat = new Intl.NumberFormat("en");
+  const convertThousandFormat = React.useMemo(
+    () => new Intl.NumberFormat("en"),
+    []
+  );
 
-  const convertThousandShort = new Intl.NumberFormat("en", {
-    notation: "compact",
-  });
+  const convertThousandShort = React.useMemo(
+    () =>
+      new Intl.NumberFormat("en", {
+        notation: "compact",
+      }),
+    []
+  );
 
   const latestYear = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return "";
@@ -112,13 +123,13 @@ function App() {
   }, [state.data]);
 
   const totalPopulation = React.useMemo(() => {
-    if (!state.data || state.data.length === 0) return "";
+    if (!state.data || state.data.length === 0) return 0;
 
-    return state.data.reduce((acc, curr) => Number(acc + curr.Population), 0);
+    return state.data.reduce((acc, curr) => acc + Number(curr.Population), 0);
   }, [state.data]);
 
   const pieData = React.useMemo(() => {
-    if (!state.data || state.data.length === 0) return "";
+    if (!state.data || state.data.length === 0) return [];
 
     return state.data.map((item) => ({
       year: item.Year,
@@ -128,7 +139,7 @@ function App() {
   }, [state.data]);
 
   const lineData = React.useMemo(() => {
-    if (!state.data || state.data.length === 0) return "";
+    if (!state.data || state.data.length === 0) return [];
 
     return state.data
       .map((item) => ({
@@ -138,7 +149,7 @@ function App() {
         fill: `hsl(${Math.random() * 360}, 70%, 50%)`,
       }))
       .sort((a, b) => Number(a.year) - Number(b.year));
-  }, [state.data]);
+  }, [state.data, convertThousandShort]);
 
   if (state.isLoading) {
     return <LoadingComponent />;
@@ -201,7 +212,7 @@ function App() {
                       }
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-xs  ">
+                        <span className="text-xs">
                           {chart === "Line" ? (
                             <ChartLine className="size-10" />
                           ) : (
@@ -218,7 +229,7 @@ function App() {
               </div>
             </Card>
           </SectionCards>
-          <div className=" px-4 lg:px-6">
+          <div className="px-4 lg:px-6">
             {state.activeChart === "Line" ? (
               <LineChartComponent
                 title="Growth Population"
@@ -250,4 +261,5 @@ function App() {
     </div>
   );
 }
+
 export default App;

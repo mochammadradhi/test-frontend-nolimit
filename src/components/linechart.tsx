@@ -1,3 +1,4 @@
+import React, { useState } from "react"; // Ensure React is imported
 import { Line, CartesianGrid, LabelList, LineChart, XAxis } from "recharts";
 import {
   ChartConfig,
@@ -22,9 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useState } from "react";
-
 interface LineChartProps {
   chartConfigLine: ChartConfig;
   lineData: Array<any>;
@@ -36,7 +34,8 @@ interface LineChartProps {
   startYear?: number;
   endYear?: number;
 }
-const LineChartComponent = ({
+
+const LineChartComponent: React.FC<LineChartProps> = ({
   chartConfigLine,
   lineData,
   dataKeyAxis,
@@ -44,10 +43,10 @@ const LineChartComponent = ({
   dataKeyDisplay,
   title,
   uptodateYear,
-  startYear,
-  endYear,
-}: LineChartProps) => {
-  const [selectedYear, setSelectedYear] = useState(`-- Select Year --`);
+  startYear = 2000, // Default value for optional props
+  endYear = new Date().getFullYear(), // Default value for optional props
+}) => {
+  const [selectedYear, setSelectedYear] = useState("-- Select Year --");
 
   // Filter data based on selected year
   const filteredData =
@@ -65,6 +64,7 @@ const LineChartComponent = ({
       (startYear + i).toString()
     ).reverse(),
   ];
+
   return (
     <Card className="@container/card">
       <CardHeader className="relative">
