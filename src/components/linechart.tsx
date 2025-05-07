@@ -43,8 +43,8 @@ const LineChartComponent: React.FC<LineChartProps> = ({
   dataKeyDisplay,
   title,
   uptodateYear,
-  startYear,
-  endYear,
+  startYear = 2013,
+  endYear = 2023,
 }) => {
   const [selectedYear, setSelectedYear] = useState("-- Select Year --");
 
