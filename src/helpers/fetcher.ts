@@ -7,6 +7,7 @@ interface FetcherArgs extends AxiosRequestConfig {
 }
 
 interface ApiResponse<T = unknown> {
+    source: any;
     data?: T;
     status?: string;
     message?: string;
@@ -14,15 +15,14 @@ interface ApiResponse<T = unknown> {
 
 const GlobalGet = async <T = unknown>(args: FetcherArgs): Promise<ApiResponse<T>> => {
     try {
-        const response: AxiosResponse<ApiResponse<T>> = await axios({ ...args, method: 'GET', timeout: 5 });
+        const response: AxiosResponse<ApiResponse<T>> = await axios({ ...args, method: 'GET', timeout: 5000 }); // Updated timeout to 5000ms
         return response.data;
     } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
-            return err.response.data;
+            return {status:"error", message:err.response.data};
         }
-        return { message: 'Unknown error occurred' };
+        return {status:"error", message: 'Unknown error occurred, Please Try Again!' };
     }
 }
-
 
 export { GlobalGet };
