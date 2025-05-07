@@ -1,3 +1,5 @@
+// Membuat component error dan pass props untuk reusable components sesuai kebutuhan
+
 interface errorProps {
   errorMsg: "string";
 }

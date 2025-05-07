@@ -5,12 +5,12 @@ import { ChartPie, ChartLine, TrendingUpIcon } from "lucide-react"; // Consolida
 import { GlobalGet } from "@/helpers/fetcher.ts";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-import PieChartComponent from "./components/piechart";
-import LineChartComponent from "./components/linechart";
-import SectionCards from "./components/cards";
+import PieChartComponent from "@/components/piechart";
+import LineChartComponent from "@/components/linechart";
+import SectionCards from "@/components/cards";
 
-import LoadingComponent from "./components/loading";
-import ErrorComponent from "./components/error";
+import LoadingComponent from "@/components/loading";
+import ErrorComponent from "@/components/error";
 
 const chartConfig = {
   Year: {
@@ -32,7 +32,7 @@ const chartConfigLine = {
     color: "hsl(212 95% 68%)",
   },
 };
-
+// mendefinisikan struktur Data Populasi yang dibutuhkan dari tipedata
 interface PopulationData {
   data: Array<{
     Nation: string;
@@ -51,6 +51,7 @@ interface PopulationData {
 }
 
 function App() {
+  // mendefinisikan State yang akan menampung beberapa kebetuhan value
   const [state, setState] = React.useState<PopulationData>({
     isLoading: true,
     data: [],
@@ -63,7 +64,7 @@ function App() {
     error: null,
     activeChart: "Line",
   });
-
+  // Fetching data dari API url untuk mendapatkan suatu value data
   const fetchData = React.useCallback(async () => {
     try {
       const response = await GlobalGet<PopulationData>({
@@ -79,7 +80,13 @@ function App() {
       }
       setState((prev) => ({
         ...prev,
-        data: response.data ?? [],
+        data: Array.isArray(response.data)
+          ? response.data.map((item) => ({
+              Nation: item.Nation || "",
+              Year: item.Year || "",
+              Population: item.Population || "",
+            }))
+          : [],
         source: response?.source?.[0]?.annotations ?? {
           source_name: "",
           dataset_name: "",
@@ -101,11 +108,12 @@ function App() {
     fetchData();
   }, [fetchData]);
 
+  // small function untuk reusable function convert angka menjadi rapih
   const convertThousandFormat = React.useMemo(
     () => new Intl.NumberFormat("en"),
     []
   );
-
+  // small function untuk reusable function convert angka menjadi pendek
   const convertThousandShort = React.useMemo(
     () =>
       new Intl.NumberFormat("en", {
@@ -114,6 +122,7 @@ function App() {
     []
   );
 
+  // small function untuk reusable function filtering tahun
   const latestYear = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return "";
 
@@ -122,12 +131,14 @@ function App() {
     }, state.data[0]).Year;
   }, [state.data]);
 
+  // small function untuk reusable function menghitung total populasi
   const totalPopulation = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return 0;
 
     return state.data.reduce((acc, curr) => acc + Number(curr.Population), 0);
   }, [state.data]);
 
+  // function untuk memfilter data yang akan hanya di gunakan di Pie Chart
   const pieData = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return [];
 
@@ -138,6 +149,7 @@ function App() {
     }));
   }, [state.data]);
 
+  // function untuk memfilter data yang akan hanya di gunakan di Line Chart
   const lineData = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return [];
 
@@ -151,10 +163,12 @@ function App() {
       .sort((a, b) => Number(a.year) - Number(b.year));
   }, [state.data, convertThousandShort]);
 
+  // Loading Handling ketika data sedang di fetch
   if (state.isLoading) {
     return <LoadingComponent />;
   }
 
+  // Error Handling ketika ada seuatu yang error terjadi
   if (state.error) {
     return <ErrorComponent errorMsg={state.error.message} />;
   }
@@ -198,7 +212,7 @@ function App() {
 
               <div className="flex">
                 {["Line", "Pie"].map((key) => {
-                  const chart = key as keyof typeof chartConfig;
+                  const chart = key;
                   return (
                     <button
                       key={chart}

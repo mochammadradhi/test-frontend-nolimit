@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+// Membuat component linechart dan pass props untuk reusable components sesuai kebutuhan
 interface LineChartProps {
   chartConfigLine: ChartConfig;
   lineData: Array<any>;
@@ -43,12 +43,12 @@ const LineChartComponent: React.FC<LineChartProps> = ({
   dataKeyDisplay,
   title,
   uptodateYear,
-  startYear = 2000, // Default value for optional props
-  endYear = new Date().getFullYear(), // Default value for optional props
+  startYear,
+  endYear,
 }) => {
   const [selectedYear, setSelectedYear] = useState("-- Select Year --");
 
-  // Filter data based on selected year
+  // Filter data berdasarkan tahun yang dipilih
   const filteredData =
     selectedYear === "-- Select Year --"
       ? lineData
@@ -57,7 +57,8 @@ const LineChartComponent: React.FC<LineChartProps> = ({
           return itemYear === selectedYear;
         });
 
-  // Generate years array for dropdown with "All Years" option
+  // Generate array semua tahun beserta "All Years" option untuk dropdown option
+
   const years = [
     "-- Select Year --",
     ...Array.from({ length: endYear - startYear + 1 }, (_, i) =>

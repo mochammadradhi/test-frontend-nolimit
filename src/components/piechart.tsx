@@ -23,7 +23,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useState } from "react";
-
+// Membuat component piechart dan pass props untuk reusable components sesuai kebutuhan
 interface PieChartProps {
   chartConfig: ChartConfig;
   pieData: Array<any>;
@@ -49,7 +49,7 @@ const PieChartComponent = ({
 }: PieChartProps) => {
   const [selectedYear, setSelectedYear] = useState(`-- Select Year --`);
 
-  // Filter data based on selected year
+  // Filter data berdasarkan tahun yang dipilih
   const filteredData =
     selectedYear === "-- Select Year --"
       ? pieData
@@ -58,9 +58,9 @@ const PieChartComponent = ({
           return itemYear === selectedYear;
         });
 
-  // Generate years array for dropdown with "All Years" option
+  // Generate array semua tahun beserta "All Years" option untuk dropdown option
 
-  // Calculate total population for filtered data
+  // Menghitung total population untuk filtering data
   const filteredTotalPopulation =
     selectedYear === "-- Select Year --"
       ? totalPopulation
@@ -69,7 +69,7 @@ const PieChartComponent = ({
           0
         );
 
-  // Generate years array for dropdown
+  // Generate array semua tahun
   const years = [
     "-- Select Year --",
     ...Array.from({ length: endYear - startYear + 1 }, (_, i) =>

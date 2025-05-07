@@ -1,3 +1,5 @@
+// Membuat component cards dan pass props untuk reusable components sesuai kebutuhan
+
 interface SectionCardsProps {
   children: React.ReactNode;
 }

@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-
+// Membuat function helpers component khususnya menggunakan axios untuk fetch API dan agar bisa digunakan berulang ulang
 interface FetcherArgs extends AxiosRequestConfig {
     url: string;
     data?: unknown;
@@ -7,7 +7,7 @@ interface FetcherArgs extends AxiosRequestConfig {
 }
 
 interface ApiResponse<T = unknown> {
-    source: any;
+    source: any; 
     data?: T;
     status?: string;
     message?: string;
@@ -19,9 +19,17 @@ const GlobalGet = async <T = unknown>(args: FetcherArgs): Promise<ApiResponse<T>
         return response.data;
     } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
-            return { status: "error", message: String(err.response.data) }; 
+            return { 
+                status: "error", 
+                message: String(err.response.data), 
+                source: null 
+            }; 
         }
-        return { status: "error", message: "Unknown error occurred, Please Try Again!" };
+        return { 
+            status: "error", 
+            message: "Unknown error occurred, Please Try Again!", 
+            source: null 
+        };
     }
 };
 

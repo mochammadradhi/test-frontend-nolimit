@@ -1,3 +1,5 @@
+// Membuat component loading dan pass props untuk reusable components sesuai kebutuhan
+
 const LoadingComponent = () => {
   return (
     <div className="flex h-screen w-full items-center justify-center">
