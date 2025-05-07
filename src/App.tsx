@@ -12,6 +12,7 @@ import LineChartComponent from "./components/linechart";
 import SectionCards from "./components/cards";
 
 import LoadingComponent from "./components/loading";
+import ErrorComponent from "./components/error";
 
 const chartConfig = {
   Year: {
@@ -57,7 +58,7 @@ function App() {
     data: [],
     source: {},
     error: null,
-    activeChart: "",
+    activeChart: "Line",
   });
 
   const fetchData = async () => {
@@ -65,11 +66,22 @@ function App() {
       const response = await GlobalGet<PopulationData>({
         url: `https://datausa.io/api/data?drilldowns=Nation&measures=Population`,
       });
-
+      if (response.status === "error") {
+        setState((prev) => ({
+          ...prev,
+          error: response,
+          isLoading: false,
+        }));
+      }
       setState((prev) => ({
         ...prev,
-        data: response.data,
-        source: response?.source[0]?.annotations,
+        data: response.data ?? [],
+        source: response?.source?.[0]?.annotations ?? {
+          source_name: "",
+          dataset_name: "",
+          dataset_link: "",
+          source_description: "",
+        },
         isLoading: false,
       }));
     } catch (err) {
@@ -102,7 +114,7 @@ function App() {
   const totalPopulation = React.useMemo(() => {
     if (!state.data || state.data.length === 0) return "";
 
-    return state.data.reduce((acc, curr) => acc + curr.Population, 0);
+    return state.data.reduce((acc, curr) => Number(acc + curr.Population), 0);
   }, [state.data]);
 
   const pieData = React.useMemo(() => {
@@ -122,7 +134,7 @@ function App() {
       .map((item) => ({
         year: item.Year,
         population: item.Population,
-        displayPopulation: convertThousandShort.format(item.Population),
+        displayPopulation: convertThousandShort.format(Number(item.Population)),
         fill: `hsl(${Math.random() * 360}, 70%, 50%)`,
       }))
       .sort((a, b) => Number(a.year) - Number(b.year));
@@ -131,6 +143,11 @@ function App() {
   if (state.isLoading) {
     return <LoadingComponent />;
   }
+
+  if (state.error) {
+    return <ErrorComponent errorMsg={state.error.message} />;
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
