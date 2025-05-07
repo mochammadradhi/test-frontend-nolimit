@@ -2,50 +2,27 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 interface FetcherArgs extends AxiosRequestConfig {
     url: string;
-    data?: any;
+    data?: unknown;
     headers?: Record<string, string>;
 }
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
     data?: T;
     status?: string;
     message?: string;
 }
 
-const GlobalGet = async <T = any>(args: FetcherArgs): Promise<ApiResponse<T>> => {
+const GlobalGet = async <T = unknown>(args: FetcherArgs): Promise<ApiResponse<T>> => {
     try {
-        const response: AxiosResponse<T> = await axios({ ...args, method: 'GET' }, { timeout: 5 });
-        return response?.data;
-    } catch (err: any) {
-        return err?.response?.data;
+        const response: AxiosResponse<ApiResponse<T>> = await axios({ ...args, method: 'GET', timeout: 5 });
+        return response.data;
+    } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response) {
+            return err.response.data;
+        }
+        return { message: 'Unknown error occurred' };
     }
-};
+}
 
-const GlobalPost = async <T = any>(args: FetcherArgs): Promise<ApiResponse<T>> => {
-    try {
-        const response: AxiosResponse<T> = await axios({ ...args, method: 'POST' }, { timeout: 5 });
-        return response?.data;
-    } catch (err: any) {
-        return err?.response?.data;
-    }
-};
 
-const GlobalDelete = async <T = any>(args: FetcherArgs): Promise<ApiResponse<T>> => {
-    try {
-        const response: AxiosResponse<T> = await axios({ ...args, method: 'DELETE' });
-        return response?.data;
-    } catch (err: any) {
-        return err?.response?.data;
-    }
-};
-
-const GlobalPut = async <T = any>(args: FetcherArgs): Promise<ApiResponse<T>> => {
-    try {
-        const response: AxiosResponse<T> = await axios({ ...args, method: 'PUT' }, { timeout: 10 });
-        return response?.data;
-    } catch (err: any) {
-        return err?.response?.data;
-    }
-};
-
-export { GlobalGet, GlobalDelete, GlobalPost, GlobalPut };
+export { GlobalGet };
